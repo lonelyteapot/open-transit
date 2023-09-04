@@ -91,6 +91,13 @@ class Query:
         return list(map(TransitNetwork.from_model, models))
 
     @strawberry.field
+    def network(self, info: CustomInfo, id: UUID) -> TransitNetwork | None:
+        model = info.context.networks_repository.get(id)
+        if model is None:
+            return None
+        return TransitNetwork.from_model(model)
+
+    @strawberry.field
     def network_by_name(self, info: CustomInfo, name: str) -> TransitNetwork | None:
         model = info.context.networks_repository.get_by_name(name)
         if model is None:
@@ -101,6 +108,13 @@ class Query:
     def routes(self, info: CustomInfo) -> list[TransitRoute]:
         models = info.context.routes_repository.list()
         return list(map(TransitRoute.from_model, models))
+
+    @strawberry.field
+    def route(self, info: CustomInfo, id: UUID) -> TransitRoute | None:
+        model = info.context.routes_repository.get(id)
+        if model is None:
+            return None
+        return TransitRoute.from_model(model)
 
 
 schema = strawberry.Schema(query=Query)

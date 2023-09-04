@@ -17,5 +17,9 @@ class NetworksRepository(ABC):
         ...
 
     @abstractmethod
+    def get(self, id: UUID) -> Network | None:
+        ...
+
+    @abstractmethod
     def get_by_name(self, name: str) -> Network | None:
         ...

@@ -24,3 +24,7 @@ class RoutesRepository(ABC):
     @abstractmethod
     def list_for_network(self, network: Network) -> List[Route]:
         ...
+
+    @abstractmethod
+    def get(self, id: UUID) -> Route | None:
+        ...
