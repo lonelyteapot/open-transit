@@ -1,12 +1,15 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from enum import StrEnum
+from typing import Self
 from uuid import UUID
 
 import strawberry
 import strawberry.fastapi
 import strawberry.types
 
+from open_transit import transit_type
 from open_transit.networks import Network, NetworksRepository
 from open_transit.routes import Route, RoutesRepository
 
@@ -18,6 +21,26 @@ class CustomContext(strawberry.fastapi.BaseContext):
 
 
 CustomInfo = strawberry.types.Info[CustomContext, None]
+
+
+@strawberry.enum
+class TransitType(StrEnum):
+    bus = "bus"
+    trolleybus = "trolleybus"
+    tram = "tram"
+    metro = "metro"
+
+    @classmethod
+    def from_model(cls, model: transit_type.TransitType) -> Self:
+        match model:
+            case transit_type.TransitType.bus:
+                return cls.bus
+            case transit_type.TransitType.trolleybus:
+                return cls.trolleybus
+            case transit_type.TransitType.tram:
+                return cls.tram
+            case transit_type.TransitType.metro:
+                return cls.metro
 
 
 @strawberry.type
@@ -46,6 +69,7 @@ class TransitRoute:
     id: UUID
     number: str
     title: str
+    type: TransitType
     _model: strawberry.Private[Route]
 
     @classmethod
@@ -54,6 +78,7 @@ class TransitRoute:
             id=model.id,
             number=model.number,
             title=model.title,
+            type=TransitType.from_model(model.type),
             _model=model,
         )
 
