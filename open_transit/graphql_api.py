@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from decimal import Decimal
 from enum import StrEnum
 from typing import Self
 from uuid import UUID
@@ -12,12 +13,14 @@ import strawberry.types
 from open_transit import transit_type
 from open_transit.networks import Network, NetworksRepository
 from open_transit.routes import Route, RoutesRepository
+from open_transit.stops import Stop, StopsRepository
 
 
 @dataclass
 class CustomContext(strawberry.fastapi.BaseContext):
     routes_repository: RoutesRepository
     networks_repository: NetworksRepository
+    stops_repository: StopsRepository
 
 
 CustomInfo = strawberry.types.Info[CustomContext, None]
@@ -84,6 +87,23 @@ class TransitRoute:
 
 
 @strawberry.type
+class TransitStop:
+    id: UUID
+    name: str
+    lat: Decimal
+    lon: Decimal
+
+    @classmethod
+    def from_model(cls, model: Stop):
+        return cls(
+            id=model.id,
+            name=model.name,
+            lat=model.lat,
+            lon=model.lon,
+        )
+
+
+@strawberry.type
 class Query:
     @strawberry.field
     def networks(self, info: CustomInfo) -> list[TransitNetwork]:
@@ -115,6 +135,28 @@ class Query:
         if model is None:
             return None
         return TransitRoute.from_model(model)
+
+    @strawberry.field
+    def stops(self, info: CustomInfo) -> list[TransitStop]:
+        models = info.context.stops_repository.list()
+        return list(map(TransitStop.from_model, models))
+
+    @strawberry.field
+    def stops_in_rectangle(
+        self,
+        info: CustomInfo,
+        min_lat: Decimal,
+        min_lon: Decimal,
+        max_lat: Decimal,
+        max_lon: Decimal,
+    ) -> list[TransitStop]:
+        models = info.context.stops_repository.list_in_rectangle(
+            min_lat=min_lat,
+            min_lon=min_lon,
+            max_lat=max_lat,
+            max_lon=max_lon,
+        )
+        return list(map(TransitStop.from_model, models))
 
 
 schema = strawberry.Schema(query=Query)
