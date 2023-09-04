@@ -91,6 +91,13 @@ class Query:
         return list(map(TransitNetwork.from_model, models))
 
     @strawberry.field
+    def network_by_name(self, info: CustomInfo, name: str) -> TransitNetwork | None:
+        model = info.context.networks_repository.get_by_name(name)
+        if model is None:
+            return None
+        return TransitNetwork.from_model(model)
+
+    @strawberry.field
     def routes(self, info: CustomInfo) -> list[TransitRoute]:
         models = info.context.routes_repository.list()
         return list(map(TransitRoute.from_model, models))

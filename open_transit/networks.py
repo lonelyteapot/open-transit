@@ -15,3 +15,7 @@ class NetworksRepository(ABC):
     @abstractmethod
     def list(self) -> list[Network]:
         ...
+
+    @abstractmethod
+    def get_by_name(self, name: str) -> Network | None:
+        ...
